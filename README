@@ -1,0 +1,64 @@
+
+db: sqlite > mysql
+php: laravel
+nodejs (yarn ?)
+
+MDP: how to cipher ?
+
+sqlite> select * from users;
+1|admin|admin@localhost|$2y$10$6ujbQ7Hl59aXUh52Ly.qruayKaggXWYXYDK4WUIeh6gzAhtw9z1U.|1||2019-05-22 11:19:04|2019-05-22 11:19:04|
+sqlite> select * from settings;
+media_path|s:11:"/koel/media";
+
+# regenerate password
+1) use https://github.com/cviebrock/artisan-hash
+	+ integration w/ artisan
+	- outdated
+	- does not install (unmet dependencies)
+
+2) write my own callback
+	+ integration w/ artisan
+	- to be maintained
+
+	app/Console/Commands/xx.php
+	app/Console/Kernel.php -> append new command to $commands
+
+#ENV PATH="${PATH}:/root/.composer/vendor/bin"
+#RUN laravel new foobar
+#RUN apk add php7-xmlwriter php7-dom php7-xml
+#RUN composer create-project laravel/laravel foobar
+
+#TODO: branch as variable => tag
+
+# .env file .
+# dbtype: sqlite-e2e
+# dbpath: /tmp/koel.sqlite
+
+# /!\ dnas le code, le chemin de la db est fixe!
+# __DIR__.'/../database/e2e.sqlite'
+# soit on patch, soit on utilise se chemin
+
+# in db:users
+# name: xxx
+# email: yyy
+# in db: settings
+# media path: /var/www/koel/media
+# 
+
+
+
+# Success! Koel can now be run from localhost with `php artisan serve`.
+# You can also scan for media with `php artisan koel:sync`.
+
+#RUN cd /var/www/koel && php artisan koel:init
+
+
+#NOTE: make the koel:init at start so the user can provide params he wants ?
+#=> on copie la base qui contient déjà les données par défaut
+#=> on fait un script de démarrage qui autorise la modif des données
+#   au boot via variables d'env
+
+# optionel ? (param env boot)
+# ./artisan koel:sync
+
+

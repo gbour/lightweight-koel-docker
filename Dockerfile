@@ -1,65 +1,42 @@
-FROM alpine
+FROM alpine:3.8
+
+LABEL author="Guillaume Bour <guillaume@bour.cc>"
+ENV KOEL_VERSION v3.7.2
 
 RUN apk update && \
-	apk add php7 php7-pdo_sqlite php7-zip composer
+	apk add php7 php7-pdo_sqlite php7-zip php7-simplexml php7-curl \
+		php7-session php7-tokenizer php7-fileinfo php7-ctype composer yarn \
+        bash sqlite vim curl && \
+    apk --update add tar
 
+RUN mkdir -p /koel && cd /koel && mkdir db media www
+WORKDIR /koel/www
+
+# install koel
 RUN composer global require "laravel/installer"
+RUN curl -SsL -o /tmp/koel.tar.gz https://github.com/phanan/koel/archive/$KOEL_VERSION.tar.gz && \
+    tar --strip-components=1 -xvf /tmp/koel.tar.gz
+RUN composer install --no-dev
+#    fixup for database path (fixed in master)
+RUN sed -ie "s/\(__DIR__.'\/..\/database\/e2e.sqlite'\)/env('DB_DATABASE', \1)/" config/database.php
+#    adds koel:pwd command to artisan to update admin password
+COPY files/Password.php app/Console/Commands
+RUN sed -ie "s/commands = \[/commands = [\n        Commands\\\\Password::class,/" app/Console/Kernel.php
 
-#ENV PATH="${PATH}:/root/.composer/vendor/bin"
-#RUN laravel new foobar
-#RUN apk add php7-xmlwriter php7-dom php7-xml
-#RUN composer create-project laravel/laravel foobar
+# init koel (w/ pre-filled values)
+# database contains default values:
+#   username: admin
+#   email: admin@localhost
+#   password: password
+COPY files/env /koel/www/.env
+COPY files/koel.sqlite /koel/db/
+RUN php artisan koel:init
 
-#RUN apk add yarn
-RUN apk add nodejs git
-#RUN mkdir /var/www/koel
+COPY files/start.sh /koel
 
-#RUN cd /var/www/koel
-#TODO: branch as variable => tag
-RUN git clone --depth 1 --branch v3.7.2 https://github.com/phanan/koel.git /var/www/koel
+# TODO: cleanup (temp, dev files, unused packages)
+RUN rm -Rf /tmp/*
 
-RUN apk add php7-simplexml php7-curl
-RUN cd /var/www/koel && composer install --no-dev
-
-RUN apk add php7-ctype yarn
-
-# .env file .
-# dbtype: sqlite-e2e
-# dbpath: /tmp/koel.sqlite
-
-# /!\ dnas le code, le chemin de la db est fixe!
-# __DIR__.'/../database/e2e.sqlite'
-# soit on patch, soit on utilise se chemin
-
-# in db:users
-# name: xxx
-# email: yyy
-# in db: settings
-# media path: /var/www/koel/media
-# 
-
-
-
-# Success! Koel can now be run from localhost with `php artisan serve`.
-# You can also scan for media with `php artisan koel:sync`.
-
-COPY env /var/www/koel/.env
-RUN mkdir -p /koel/{www,media,db}
-COPY koel.sqlite /koel
-RUN cd /var/www/koel && sed -e "s/\(__DIR__.'\/..\/database\/e2e.sqlite'\)/env('DB_DATABASE', \1)/" config/database.php > /tmp/database.php && mv /tmp/database.php ./config/
-
-#RUN cd /var/www/koel && php artisan koel:init
-RUN apk add php7-session php7-tokenizer php7-fileinfo
-
+VOLUME ["/koel/media"]
 EXPOSE 8000
-
-#NOTE: make the koel:init at start so the user can provide params he wants ?
-#=> on copie la base qui contient déjà les données par défaut
-#=> on fait un script de démarrage qui autorise la modif des données
-#   au boot via variables d'env
-
-# optionel ? (param env boot)
-# ./artisan koel:sync
-
-
-# run ./artisan serve --host=0.0.0.0
+CMD ["/koel/start.sh"]
