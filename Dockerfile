@@ -22,6 +22,8 @@ RUN sed -ie "s/\(__DIR__.'\/..\/database\/e2e.sqlite'\)/env('DB_DATABASE', \1)/"
 #    adds koel:pwd command to artisan to update admin password
 COPY files/Password.php app/Console/Commands
 RUN sed -ie "s/commands = \[/commands = [\n        Commands\\\\Password::class,/" app/Console/Kernel.php
+#    increase php memory
+RUN sed -ie 's/memory_limit = 128M/memory_limit = 512M/' /etc/php7/php.ini
 
 # init koel (w/ pre-filled values)
 # database contains default values:
