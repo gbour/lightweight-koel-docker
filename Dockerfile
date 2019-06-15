@@ -5,7 +5,7 @@ ENV KOEL_VERSION v3.7.2
 
 RUN apk update && \
 	apk add php7 php7-pdo_sqlite php7-zip php7-simplexml php7-curl \
-		php7-session php7-tokenizer php7-fileinfo php7-ctype composer yarn \
+		php7-session php7-tokenizer php7-fileinfo php7-ctype php7-exif composer yarn \
         bash sqlite vim curl && \
     apk --update add tar
 
