@@ -3,6 +3,11 @@
 
 DB=/koel/db/koel.sqlite
 
+if [[ ! -e $DB ]]; then
+	echo "* copying database file"
+	cp /koel/koel.sqlite.orig $DB
+fi
+
 if [ "$ADMIN_EMAIL" ]; then
 	echo "* setup custom admin email"
 	sqlite3 $DB "UPDATE users SET email = '$ADMIN_EMAIL' WHERE id=1"

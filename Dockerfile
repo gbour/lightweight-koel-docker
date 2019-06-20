@@ -32,7 +32,7 @@ RUN sed -ie 's/memory_limit = 128M/memory_limit = 512M/' /etc/php7/php.ini
 #   password: password
 COPY files/env /koel/www/.env
 COPY files/koel.sqlite /koel/db/
-RUN php artisan koel:init
+RUN php artisan koel:init && mv /koel/db/koel.sqlite /koel/koel.sqlite.orig
 
 COPY files/start.sh /koel
 
