@@ -12,6 +12,13 @@ if [ "$ADMIN_PASSWORD" ]; then
 	# is automatically updating dabatase from env variable
 	/koel/www/artisan koel:pwd
 fi
+if [ "$FORCE_HTTPS" == "true" ]; then
+	sed -ie 's/<?php/<?php\nURL::forceScheme("https");/' /koel/www/routes/web.php
+fi
+if [ "$ROOT_URL" ]; then
+	sed -ie "s|<?php|<?php\nURL::forceRootUrl(\"$ROOT_URL\");|" /koel/www/routes/web.php
+fi
+
 
 # sync medias
 if [ "$MEDIA_SYNC" != "false" ]; then
