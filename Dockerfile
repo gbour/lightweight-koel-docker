@@ -19,6 +19,11 @@ RUN curl -SsL -o /tmp/koel.tar.gz https://github.com/phanan/koel/archive/$KOEL_V
 RUN composer install --no-dev
 #    fixup for database path (fixed in master)
 RUN sed -ie "s/\(__DIR__.'\/..\/database\/e2e.sqlite'\)/env('DB_DATABASE', \1)/" config/database.php
+#    fixup for JSON encoding.
+#    API json encoding may fail if texts to-be-encoded contains invalid characters.
+#    I fixed it globally in laravel framework by adding JSON_INVALID_UTF8_IGNORE options, but should be done
+#    for every call instead.
+RUN sed -ie "s/\($this->encodingOptions = $options\)/\1|JSON_INVALID_UTF8_IGNORE/" vendor/laravel/framework/src/Illuminate/Http/JsonResponse.php
 #    adds koel:pwd command to artisan to update admin password
 COPY files/Password.php app/Console/Commands
 RUN sed -ie "s/commands = \[/commands = [\n        Commands\\\\Password::class,/" app/Console/Kernel.php
